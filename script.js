@@ -156,6 +156,46 @@ $("customerForm")?.addEventListener("submit", async (event) => {
     }
 });
 
+// ===== LOAN APPLICATION SUBMISSION =====
+$("applicationForm")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const customerId = $("customerId")?.value?.trim();
+    const requestedAmount = Number($("requestedAmount")?.value);
+    const annualIncome = Number($("annualIncome")?.value);
+    const purpose = $("purpose")?.value?.trim();
+
+    if (!customerId || !requestedAmount || !annualIncome || !purpose) {
+        showMessage("applicationMessage", "Please fill in all application fields.", true);
+        return;
+    }
+
+    try {
+        const result = await apiRequest(`${API}/applications?customerId=${encodeURIComponent(customerId)}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                requestedAmount,
+                annualIncome,
+                purpose
+            })
+        });
+
+        showMessage(
+            "applicationMessage",
+            `Application submitted successfully! Application ID: ${result.id}. Status: ${result.status}`
+        );
+
+        addNotification(
+            `Loan application #${result.id} submitted for Customer #${customerId}. Status: ${result.status}`
+        );
+
+        $("applicationForm").reset();
+    } catch (error) {
+        showMessage("applicationMessage", error.message, true);
+    }
+});
+
 // ===== CUSTOMER LOGIN PLACEHOLDER =====
 // A secure customer login endpoint must be added to the backend.
 // Never treat an email-only check as authentication.

@@ -1,0 +1,14 @@
+{
+    "version":  "1.0.0",
+    "name":  "creditcare-frontend",
+    "description":  "CreditCare Smart Loan Management System - Frontend",
+    "scripts":  {
+                    "preview":  "vite preview",
+                    "build":  "vite build",
+                    "dev":  "vite"
+                },
+    "devDependencies":  {
+                            "vite":  "^5.4.14"
+                        },
+    "private":  true
+}
