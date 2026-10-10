@@ -1,313 +1,486 @@
+// ===== CREDITCARE API =====
 const API = "http://localhost:8081/api";
-const CUSTOMER_API = `${API}/customers`;
-const APPLICATION_API = `${API}/applications`;
 
-let adminAuthorization = "";
+let adminAuth = null;
 
-// HTML helpers
-function byId(id) {
-    return document.getElementById(id);
+// ===== COMMON FUNCTIONS =====
+const $ = (id) => document.getElementById(id);
+
+function showMessage(id, message, isError = false) {
+    const element = $(id);
+    if (!element) return;
+
+    element.textContent = message;
+    element.style.color = isError ? "#c62828" : "#16804a";
 }
 
 function escapeHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, character => ({
+    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
         "&": "&amp;",
         "<": "&lt;",
         ">": "&gt;",
         '"': "&quot;",
         "'": "&#39;"
-    })[character]);
+    })[char]);
 }
 
-function showMessage(message, isError = false) {
-    const element = byId("message");
-    if (!element) return;
+function money(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "N/A";
 
-    element.textContent = message;
-    element.style.color = isError ? "red" : "green";
+    return number.toLocaleString("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 2
+    });
 }
 
-function showAdminMessage(message, isError = false) {
-    const element = byId("adminMessage");
-    if (!element) return;
+async function apiRequest(url, options = {}) {
+    const response = await fetch(url, options);
+    const text = await response.text();
 
-    element.textContent = message;
-    element.style.color = isError ? "red" : "green";
+    let data = null;
+
+    if (text) {
+        try {
+            data = JSON.parse(text);
+        } catch {
+            data = text;
+        }
+    }
+
+    if (!response.ok) {
+        throw new Error(
+            typeof data === "string" && data
+                ? data
+                : `Request failed: HTTP ${response.status}`
+        );
+    }
+
+    return data;
 }
 
-async function requestError(response) {
-    const details = await response.text();
-    return `${response.status} ${response.statusText}: ${details}`;
+// ===== NOTIFICATIONS =====
+const NOTIFICATION_KEY = "creditcareNotifications";
+
+function getNotifications() {
+    try {
+        const value = JSON.parse(
+            localStorage.getItem(NOTIFICATION_KEY) || "[]"
+        );
+
+        return Array.isArray(value) ? value : [];
+    } catch {
+        return [];
+    }
 }
 
-// Register customer
-byId("customerForm")?.addEventListener("submit", async event => {
+function addNotification(message) {
+    const notifications = getNotifications();
+
+    notifications.unshift({
+        message: message,
+        time: new Date().toLocaleString()
+    });
+
+    localStorage.setItem(
+        NOTIFICATION_KEY,
+        JSON.stringify(notifications.slice(0, 50))
+    );
+
+    renderNotifications();
+}
+
+function renderNotifications() {
+    const output = $("notificationList");
+    if (!output) return;
+
+    const notifications = getNotifications();
+
+    if (notifications.length === 0) {
+        output.textContent = "No notifications. You're all caught up!";
+        return;
+    }
+
+    output.innerHTML = `
+        <ul>
+            ${notifications.map(item => `
+                <li>
+                    ${escapeHTML(item.message)}
+                    <small>${escapeHTML(item.time)}</small>
+                </li>
+            `).join("")}
+        </ul>
+    `;
+}
+
+$("resetNotificationsButton")?.addEventListener("click", () => {
+    localStorage.removeItem(NOTIFICATION_KEY);
+    renderNotifications();
+});
+
+// ===== CUSTOMER REGISTRATION =====
+$("customerForm")?.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const customer = {
-        fullName: byId("fullName").value.trim(),
-        email: byId("email").value.trim(),
-        phone: byId("phone").value.trim()
+        fullName: $("fullName").value.trim(),
+        email: $("email").value.trim(),
+        phone: $("phone").value.trim()
     };
 
+    if (!customer.fullName || !customer.email || !customer.phone) {
+        showMessage("message", "Please complete all fields.", true);
+        return;
+    }
+
     try {
-        const response = await fetch(CUSTOMER_API, {
+        const result = await apiRequest(`${API}/customers`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(customer)
         });
 
-        if (!response.ok) throw new Error(await requestError(response));
-
-        const saved = await response.json();
-        showMessage(`Customer registered! Customer ID: ${saved.id}`);
-        byId("customerForm").reset();
-    } catch (error) {
-        showMessage(error.message, true);
-    }
-});
-
-// Submit credit application
-byId("applicationForm")?.addEventListener("submit", async event => {
-    event.preventDefault();
-
-    const customerId = byId("customerId").value;
-
-    const application = {
-        requestedAmount: Number(byId("requestedAmount").value),
-        annualIncome: Number(byId("annualIncome").value),
-        purpose: byId("purpose").value
-    };
-
-    try {
-        const response = await fetch(
-            `${APPLICATION_API}?customerId=${encodeURIComponent(customerId)}`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(application)
-            }
+        showMessage(
+            "message",
+            `Registration successful! Your customer ID is ${result.id}.`
         );
 
-        if (!response.ok) throw new Error(await requestError(response));
+        addNotification(
+            `Customer registration completed. Customer ID: ${result.id}.`
+        );
 
-        const saved = await response.json();
-        showMessage(`Application submitted! Application ID: ${saved.id}`);
-        byId("applicationForm").reset();
+        $("customerForm").reset();
     } catch (error) {
-        showMessage(error.message, true);
+        showMessage("message", error.message, true);
     }
 });
 
-// Display customer table
-function renderCustomers(customers) {
-    if (!customers.length) return "<p>No customers found.</p>";
+// ===== CUSTOMER LOGIN PLACEHOLDER =====
+// A secure customer login endpoint must be added to the backend.
+// Never treat an email-only check as authentication.
+$("customerLoginForm")?.addEventListener("submit", (event) => {
+    event.preventDefault();
 
-    return `
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th><th>Name</th><th>Email</th><th>Phone</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${customers.map(c => `
-                    <tr>
-                        <td>${escapeHTML(c.id)}</td>
-                        <td>${escapeHTML(c.fullName)}</td>
-                        <td>${escapeHTML(c.email)}</td>
-                        <td>${escapeHTML(c.phone)}</td>
-                    </tr>
-                `).join("")}
-            </tbody>
-        </table>`;
-}
+    showMessage(
+        "loginMessage",
+        "Customer login is not enabled yet. Secure backend authentication is required.",
+        true
+    );
+});
 
-// Display application table, with optional admin actions
-function renderApplications(applications, showActions = false) {
-    if (!applications.length) {
-        return "<p>No applications found.</p>";
+// ===== LOAN ELIGIBILITY CHECKER =====
+$("eligibilityForm")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const age = Number($("age").value);
+    const income = Number($("income").value);
+    const amount = Number($("loanAmount").value);
+    const years = Number($("loanYears").value);
+
+    const result = $("eligibilityResult");
+
+    if (
+        !Number.isFinite(age) ||
+        !Number.isFinite(income) ||
+        !Number.isFinite(amount) ||
+        !Number.isFinite(years) ||
+        age < 18 || age > 100 ||
+        income < 0 ||
+        amount <= 0 ||
+        years < 1 || years > 30
+    ) {
+        result.textContent = "Please enter valid details in every field.";
+        return;
     }
 
-    return `
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Customer</th>
-                    <th>Email</th>
-                    <th>Amount</th>
-                    <th>Annual Income</th>
-                    <th>Purpose</th>
-                    <th>Status</th>
-                    ${showActions ? "<th>Admin Actions</th>" : ""}
-                </tr>
-            </thead>
-            <tbody>
-                ${applications.map(app => {
-                    const pending =
-                        String(app.status).toUpperCase() === "PENDING";
+    // Illustrative rules for a student project only.
+    const reasons = [];
 
-                    return `
-                        <tr>
-                            <td>${escapeHTML(app.id)}</td>
-                            <td>${escapeHTML(app.customer?.fullName)}</td>
-                            <td>${escapeHTML(app.customer?.email)}</td>
-                            <td>₹${escapeHTML(app.requestedAmount)}</td>
-                            <td>₹${escapeHTML(app.annualIncome)}</td>
-                            <td>${escapeHTML(app.purpose)}</td>
-                            <td>
-                                <span class="status ${escapeHTML(
-                                    String(app.status).toLowerCase()
-                                )}">
-                                    ${escapeHTML(app.status)}
-                                </span>
-                            </td>
-                            ${showActions ? `
-                                <td class="admin-actions">
-                                    ${pending ? `
-                                        <button
-                                            type="button"
-                                            class="approve-btn"
-                                            data-id="${Number(app.id)}"
-                                            data-status="APPROVED">
-                                            Approve
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            class="reject-btn"
-                                            data-id="${Number(app.id)}"
-                                            data-status="REJECTED">
-                                            Reject
-                                        </button>
-                                    ` : `<strong>Already ${escapeHTML(app.status)}</strong>`}
-                                </td>
-                            ` : ""}
-                        </tr>`;
-                }).join("")}
-            </tbody>
-        </table>`;
-}
-
-// Load customers
-async function loadCustomers() {
-    byId("customersOutput").textContent = "Loading customers...";
-
-    try {
-        const response = await fetch(CUSTOMER_API);
-        if (!response.ok) throw new Error(await requestError(response));
-
-        const customers = await response.json();
-        byId("customersOutput").innerHTML = renderCustomers(customers);
-    } catch (error) {
-        byId("customersOutput").textContent = error.message;
+    if (age < 21 || age > 60) {
+        reasons.push("The demonstration age range is 21–60 years.");
     }
-}
 
-// Load all applications
+    if (income < 180000) {
+        reasons.push("The demonstration minimum annual income is ₹1,80,000.");
+    }
+
+    if (amount > income * 5) {
+        reasons.push("The requested amount exceeds five times annual income.");
+    }
+
+    const reasonHTML = reasons.length
+        ? `<ul>${reasons.map(reason =>
+            `<li>${escapeHTML(reason)}</li>`
+        ).join("")}</ul>`
+        : "<p>Your details meet the basic demonstration rules.</p>";
+
+    result.innerHTML = `
+        <h3>${reasons.length
+            ? "Demo Criteria Not Met"
+            : "Preliminary Criteria Met"}</h3>
+
+        ${reasonHTML}
+
+        <p><strong>Age:</strong> ${age}</p>
+        <p><strong>Annual income:</strong> ${money(income)}</p>
+        <p><strong>Requested amount:</strong> ${money(amount)}</p>
+        <p><strong>Repayment period:</strong> ${years} years</p>
+
+        <p class="notice">
+            This is only an illustrative estimate, not an actual loan
+            approval or rejection. Lender criteria, credit history,
+            existing debts, interest rates, and verification can change
+            the decision.
+        </p>
+    `;
+});
+
+// ===== APPLICATION DATA =====
 async function loadApplications() {
-    byId("applicationsOutput").textContent = "Loading applications...";
+    const applications = await apiRequest(`${API}/applications`);
 
-    try {
-        const response = await fetch(APPLICATION_API);
-        if (!response.ok) throw new Error(await requestError(response));
-
-        const applications = await response.json();
-        byId("applicationsOutput").innerHTML =
-            renderApplications(applications, false);
-    } catch (error) {
-        byId("applicationsOutput").textContent = error.message;
+    if (!Array.isArray(applications)) {
+        throw new Error("Unexpected application data from the server.");
     }
+
+    return applications;
 }
 
-// Admin: load applications
-async function loadAdminApplications() {
-    const output = byId("adminApplicationsOutput");
-    output.innerHTML = "<p>Loading applications...</p>";
+function applicationCard(app, includeActions = false) {
+    const customer = app.customer || {};
 
-    showAdminMessage("");
+    const customerId =
+        customer.id ?? app.customerId ?? "Not available";
+
+    const status = String(app.status || "UNKNOWN").toUpperCase();
+
+    let actions = "";
+
+    if (includeActions && status === "PENDING") {
+        actions = `
+            <button type="button"
+                data-action="status"
+                data-id="${escapeHTML(app.id)}"
+                data-status="APPROVED">
+                Approve
+            </button>
+
+            <button type="button"
+                class="secondary-button"
+                data-action="status"
+                data-id="${escapeHTML(app.id)}"
+                data-status="REJECTED">
+                Reject
+            </button>
+        `;
+    }
+
+    return `
+        <article class="application-card">
+            <h3>Application #${escapeHTML(app.id)}</h3>
+
+            <p><strong>Customer ID:</strong>
+                ${escapeHTML(customerId)}</p>
+
+            <p><strong>Customer name:</strong>
+                ${escapeHTML(customer.fullName ?? "Not available")}</p>
+
+            <p><strong>Email:</strong>
+                ${escapeHTML(customer.email ?? "Not available")}</p>
+
+            <p><strong>Phone:</strong>
+                ${escapeHTML(customer.phone ?? "Not available")}</p>
+
+            <p><strong>Requested amount:</strong>
+                ${money(app.requestedAmount)}</p>
+
+            <p><strong>Annual income:</strong>
+                ${money(app.annualIncome)}</p>
+
+            <p><strong>Purpose:</strong>
+                ${escapeHTML(app.purpose ?? "Not specified")}</p>
+
+            <p><strong>Status:</strong>
+                <span class="status-badge">${escapeHTML(status)}</span>
+            </p>
+
+            ${actions}
+        </article>
+    `;
+}
+
+function renderApplications(applications, outputId, includeActions = false) {
+    const output = $(outputId);
+    if (!output) return;
+
+    if (!applications.length) {
+        output.textContent = "No matching applications found.";
+        return;
+    }
+
+    output.innerHTML = applications
+        .map(app => applicationCard(app, includeActions))
+        .join("");
+}
+
+// ===== SEARCH AND FILTER =====
+async function searchApplications() {
+    const output = $("searchResults");
+    output.textContent = "Loading applications...";
 
     try {
-        const response = await fetch(APPLICATION_API, {
-            headers: {
-                "Authorization": adminAuthorization
-            }
+        const applications = await loadApplications();
+        const query = $("applicationSearch").value.trim().toLowerCase();
+        const selectedStatus = $("statusFilter").value.toUpperCase();
+
+        const filtered = applications.filter(app => {
+            const customer = app.customer || {};
+
+            const details = [
+                app.id,
+                customer.id,
+                customer.fullName,
+                customer.email,
+                customer.phone,
+                app.purpose,
+                app.status,
+                app.requestedAmount,
+                app.annualIncome
+            ].join(" ").toLowerCase();
+
+            const matchesQuery = details.includes(query);
+            const matchesStatus =
+                !selectedStatus ||
+                String(app.status || "").toUpperCase() === selectedStatus;
+
+            return matchesQuery && matchesStatus;
         });
 
-        if (!response.ok) throw new Error(await requestError(response));
-
-        const applications = await response.json();
-
-        output.innerHTML = renderApplications(applications, true);
-
-        showAdminMessage(
-            `Loaded ${applications.length} application(s). Pending applications have action buttons.`
-        );
+        renderApplications(filtered, "searchResults");
     } catch (error) {
-        output.textContent = "";
-        showAdminMessage(
-            `Could not load applications: ${error.message}`,
-            true
-        );
+        output.textContent = `Unable to search: ${error.message}`;
     }
 }
 
-// Admin login form
-byId("adminLoginForm").addEventListener("submit", async event => {
-    event.preventDefault();
+$("searchButton")?.addEventListener("click", searchApplications);
 
-    const username = byId("adminUsername").value.trim();
-    const password = byId("adminPassword").value;
-
-    adminAuthorization = "Basic " + btoa(`${username}:${password}`);
-
-    await loadAdminApplications();
+$("applicationSearch")?.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        searchApplications();
+    }
 });
 
-// Handle Approve/Reject clicks
-byId("adminApplicationsOutput").addEventListener("click", async event => {
-    const button = event.target.closest("button[data-status]");
+$("statusFilter")?.addEventListener("change", searchApplications);
+
+// ===== ADMIN REPORTS =====
+$("loadReportsButton")?.addEventListener("click", async () => {
+    showMessage("reportMessage", "Loading report...");
+
+    try {
+        const applications = await loadApplications();
+
+        const countStatus = status => applications.filter(
+            app => String(app.status || "").toUpperCase() === status
+        ).length;
+
+        $("totalApplications").textContent = applications.length;
+        $("pendingApplications").textContent = countStatus("PENDING");
+        $("approvedApplications").textContent = countStatus("APPROVED");
+        $("rejectedApplications").textContent = countStatus("REJECTED");
+
+        showMessage("reportMessage", "Report updated successfully.");
+    } catch (error) {
+        showMessage("reportMessage", error.message, true);
+    }
+});
+
+// ===== ADMIN APPLICATION MANAGEMENT =====
+$("adminLoginForm")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const username = $("adminUsername").value.trim();
+    const password = $("adminPassword").value;
+
+    // Basic authentication is used by the existing Spring Security setup.
+    // HTTPS is required to protect credentials in transit outside localhost.
+    adminAuth = "Basic " + btoa(`${username}:${password}`);
+
+    try {
+        // The current backend may allow GET without authentication.
+        // This request loads the application list; PATCH is the protected action.
+        const applications = await apiRequest(`${API}/applications`, {
+            headers: { Authorization: adminAuth }
+        });
+
+        renderApplications(
+            applications,
+            "adminApplicationsOutput",
+            true
+        );
+
+        showMessage(
+            "adminMessage",
+            "Applications loaded. Status updates require admin authorization."
+        );
+    } catch (error) {
+        adminAuth = null;
+        showMessage("adminMessage", error.message, true);
+    }
+});
+
+$("adminApplicationsOutput")?.addEventListener("click", async event => {
+    const button = event.target.closest("button[data-action='status']");
     if (!button) return;
+
+    if (!adminAuth) {
+        showMessage("adminMessage", "Please log in as admin first.", true);
+        return;
+    }
 
     const id = button.dataset.id;
     const status = button.dataset.status;
 
-    const action = status === "APPROVED" ? "approve" : "reject";
-
-    if (!confirm(`Are you sure you want to ${action} application ${id}?`)) {
+    if (!confirm(`Are you sure you want to ${status.toLowerCase()} application #${id}?`)) {
         return;
     }
 
-    button.disabled = true;
-    showAdminMessage(`Updating application ${id}...`);
-
     try {
-        const response = await fetch(
-            `${APPLICATION_API}/${id}/status?status=${status}`,
+        await apiRequest(
+            `${API}/applications/${encodeURIComponent(id)}/status?status=${encodeURIComponent(status)}`,
             {
                 method: "PATCH",
                 headers: {
-                    "Authorization": adminAuthorization
+                    Authorization: adminAuth
                 }
             }
         );
 
-        if (!response.ok) throw new Error(await requestError(response));
+        showMessage(
+            "adminMessage",
+            `Application #${id} status updated to ${status}.`
+        );
 
-        showAdminMessage(`Application ${id} successfully marked ${status}.`);
+        addNotification(
+            `Application #${id} status changed to ${status}.`
+        );
 
-        // Reload table so updated status is shown
-        await loadAdminApplications();
+        const applications = await loadApplications();
+
+        renderApplications(
+            applications,
+            "adminApplicationsOutput",
+            true
+        );
     } catch (error) {
-        button.disabled = false;
-        showAdminMessage(
-            `Update failed: ${error.message}. Check your admin credentials and backend security settings.`,
+        showMessage(
+            "adminMessage",
+            `Unable to update application: ${error.message}`,
             true
         );
     }
 });
 
-// View Records buttons
-byId("loadCustomersButton").addEventListener("click", loadCustomers);
-byId("loadApplicationsButton").addEventListener("click", loadApplications);
+// ===== INITIAL PAGE SETUP =====
+renderNotifications();

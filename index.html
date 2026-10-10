@@ -1,199 +1,862 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CreditCare - Smart Credit Management</title>
+    <title>CreditCare | Smart Loan Management</title>
+
     <link rel="stylesheet" href="style.css">
+
+    <style>
+        :root {
+            --navy: #102b50;
+            --blue: #0879c9;
+            --mint: #55d6be;
+            --light: #eff6ff;
+            --text: #17324d;
+            --muted: #65788e;
+            --border: #dce7f2;
+        }
+
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: var(--text);
+            background: #f6f9fd;
+            font-size: 16px;
+        }
+
+        /* TOP NAVIGATION */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--navy);
+            padding: 16px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+            box-shadow: 0 3px 15px #102b5025;
+        }
+
+        .brand {
+            font-size: 26px;
+            font-weight: 800;
+            color: white;
+            text-decoration: none;
+        }
+
+        .brand span { color: var(--mint); }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 17px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 0;
+            border-bottom: 2px solid transparent;
+            transition: .2s;
+        }
+
+        nav a:hover,
+        nav a.active {
+            color: var(--mint);
+            border-bottom-color: var(--mint);
+        }
+
+        /* IMPORTANT: SHOW ONLY THE SELECTED PAGE */
+        main > section {
+            display: none !important;
+            min-height: calc(100vh - 80px);
+            padding: 65px 7%;
+            scroll-margin-top: 85px;
+        }
+
+        main > section.active-page {
+            display: block !important;
+            animation: pageFade .25s ease;
+        }
+
+        @keyframes pageFade {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-inner {
+            max-width: 1150px;
+            margin: 0 auto;
+        }
+
+        .section-blue { background: var(--light); }
+        .section-white { background: white; }
+
+        .eyebrow {
+            color: var(--blue);
+            font-size: 12px;
+            letter-spacing: 2px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        h1, h2, h3 { color: var(--navy); }
+
+        h2 {
+            font-size: clamp(27px, 3vw, 36px);
+            margin: 10px 0 15px;
+        }
+
+        .section-intro {
+            color: var(--muted);
+            line-height: 1.8;
+            margin-bottom: 28px;
+        }
+
+        /* HOME PAGE */
+        #home {
+            background: linear-gradient(125deg, #102b50, #1769aa);
+            color: white;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            align-items: center;
+            gap: 45px;
+            padding: 20px 0 45px;
+        }
+
+        .hero h1 {
+            color: white;
+            font-size: clamp(36px, 4.5vw, 58px);
+            line-height: 1.12;
+            margin: 18px 0;
+        }
+
+        .hero p {
+            color: #e0edfa;
+            font-size: 17px;
+            line-height: 1.8;
+        }
+
+        .hero .eyebrow { color: var(--mint); }
+
+        .hero-image {
+            width: 100%;
+            height: 330px;
+            object-fit: cover;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px #07182e55;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 13px 21px;
+            background: var(--blue);
+            color: white;
+            border: 0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            margin: 10px 8px 0 0;
+            transition: .2s;
+        }
+
+        .btn:hover {
+            background: #075a96;
+            transform: translateY(-1px);
+        }
+
+        .btn-light {
+            background: var(--mint);
+            color: var(--navy);
+        }
+
+        .btn-light:hover { background: #8aefdc; }
+
+        .features-heading {
+            color: white;
+            margin: 30px 0 20px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .feature-card {
+            padding: 20px;
+            border-radius: 14px;
+            background: white;
+            color: var(--text);
+            box-shadow: 0 8px 25px #06182c20;
+        }
+
+        .feature-card img {
+            width: 100%;
+            height: 145px;
+            object-fit: cover;
+            border-radius: 9px;
+        }
+
+        .feature-card h3 { margin-bottom: 8px; }
+
+        .feature-card p {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .feature-card a {
+            color: var(--blue);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        /* FORMS AND LAYOUT */
+        .split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 45px;
+        }
+
+        .form-card {
+            background: white;
+            padding: 30px;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            box-shadow: 0 10px 35px #102b500c;
+            width: 100%;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field + .field { margin-top: 0; }
+
+        label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #28445f;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #cbd9e8;
+            border-radius: 7px;
+            background: white;
+            font: inherit;
+            color: var(--text);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: 2px solid #a3ddfa;
+            border-color: var(--blue);
+        }
+
+        .content-image {
+            width: 100%;
+            max-height: 320px;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+
+        .message, .notice {
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        /* REPORTS */
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-top: 28px;
+        }
+
+        .report-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 5px 18px #102b5008;
+        }
+
+        .report-card h3 {
+            font-size: 14px;
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .report-card p {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--blue);
+            margin: 12px 0 0;
+        }
+
+        /* SEARCH RESULTS AND NOTIFICATIONS */
+        .app-list { margin-top: 20px; }
+
+        .app-list > * {
+            padding: 18px;
+            margin: 12px 0;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: white;
+            overflow-wrap: anywhere;
+        }
+
+        #notificationList > * {
+            padding: 15px;
+            margin: 12px 0;
+            background: white;
+            border-left: 4px solid var(--blue);
+            border-radius: 6px;
+            overflow-wrap: anywhere;
+        }
+
+        .tip-card {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #e0f8f2;
+            line-height: 1.7;
+        }
+
+        footer {
+            background: var(--navy);
+            color: #dce8f5;
+            text-align: center;
+            padding: 24px;
+            line-height: 1.8;
+        }
+
+        footer strong { color: var(--mint); }
+
+        @media (max-width: 850px) {
+            .hero, .split { grid-template-columns: 1fr; }
+            .hero-image { height: 260px; }
+            .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .report-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            main > section { padding: 45px 5%; }
+        }
+
+        @media (max-width: 550px) {
+            .topbar { padding: 14px 5%; }
+            nav { gap: 11px; }
+            nav a { font-size: 12px; }
+            .feature-grid, .form-grid, .report-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-card { padding: 20px; }
+            .hero h1 { font-size: 37px; }
+        }
+    </style>
 </head>
+
 <body>
 
-<header>
-    <h1>CreditCare</h1>
-    <p>Smart Credit Application and Management System</p>
+<header class="topbar">
+    <a href="#home" class="brand" data-page="home">
+        Credit<span>Care</span>
+    </a>
+
+    <nav aria-label="Main navigation">
+        <a href="#home" data-page="home">Home</a>
+        <a href="#login" data-page="login">Login</a>
+        <a href="#eligibility" data-page="eligibility">Eligibility</a>
+        <a href="#search" data-page="search">Search</a>
+        <a href="#reports" data-page="reports">Reports</a>
+        <a href="#notifications" data-page="notifications">Notifications</a>
+        <a href="#register" data-page="register">Register</a>
+        <a href="#apply" data-page="apply">Apply</a>
+        <a href="#admin" data-page="admin">Admin</a>
+    </nav>
 </header>
 
-<nav>
-    <button type="button" onclick="showSection('customer')">Register</button>
-    <button type="button" onclick="showSection('application')">Apply for Credit</button>
-    <button type="button" onclick="showSection('records')">View Records</button>
-    <button type="button" onclick="showSection('admin')">Admin Dashboard</button>
-    <button type="button" onclick="showSection('emi')">EMI Calculator</button>
-</nav>
-
 <main>
-    <p id="message" aria-live="polite"></p>
 
-    <!-- Customer Registration -->
-    <section id="customer" class="card">
-        <h2>Customer Registration</h2>
-        <form id="customerForm">
-            <label for="fullName">Full Name</label>
-            <input id="fullName" name="fullName" required>
+    <!-- 1. HOME PAGE -->
+    <section id="home" class="active-page">
+        <div class="section-inner">
 
-            <label for="email">Email Address</label>
-            <input id="email" name="email" type="email" required>
+            <div class="hero">
+                <div>
+                    <p class="eyebrow">Your financial future starts here</p>
+                    <h1>Smart Loans.<br>Brighter Futures.</h1>
+                    <p>
+                        Welcome to CreditCare, your simple loan management
+                        system for customer registration, eligibility estimates,
+                        loan applications and application tracking.
+                    </p>
 
-            <label for="phone">Phone Number</label>
-            <input id="phone" name="phone" type="tel" required>
+                    <a href="#apply" class="btn btn-light" data-page="apply">
+                        Apply for a Loan →
+                    </a>
 
-            <button type="submit">Register Customer</button>
-        </form>
+                    <a href="#eligibility" class="btn" data-page="eligibility">
+                        Check Eligibility
+                    </a>
+                </div>
+
+                <img class="hero-image"
+                     src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1000&q=85"
+                     alt="Financial analytics dashboard">
+            </div>
+
+            <h2 class="features-heading">Everything you need in one place</h2>
+
+            <div class="feature-grid">
+                <article class="feature-card">
+                    <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=700&q=80"
+                         alt="Financial calculations">
+                    <h3>Eligibility Calculator</h3>
+                    <p>Check an indicative loan eligibility estimate.</p>
+                    <a href="#eligibility" data-page="eligibility">Check now →</a>
+                </article>
+
+                <article class="feature-card">
+                    <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=700&q=80"
+                         alt="Digital payment">
+                    <h3>Easy Applications</h3>
+                    <p>Register your details and submit a loan request.</p>
+                    <a href="#apply" data-page="apply">Apply now →</a>
+                </article>
+
+                <article class="feature-card">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=700&q=80"
+                         alt="Data analytics">
+                    <h3>Track Applications</h3>
+                    <p>Search application records and view status reports.</p>
+                    <a href="#search" data-page="search">Track now →</a>
+                </article>
+            </div>
+        </div>
     </section>
 
-    <!-- Credit Application -->
-    <section id="application" class="card">
-        <h2>Apply for Credit</h2>
-        <form id="applicationForm">
-            <label for="customerId">Customer ID</label>
-            <input id="customerId" name="customerId" type="number" min="1" required>
+    <!-- 2. LOGIN -->
+    <section id="login" class="section-blue">
+        <div class="section-inner split">
+            <div>
+                <p class="eyebrow">Welcome back</p>
+                <h2>Customer Login</h2>
+                <p class="section-intro">
+                    Access your customer account. A working customer login
+                    requires a customer authentication endpoint in the backend.
+                </p>
+                <img class="content-image"
+                     src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80"
+                     alt="Customer using a laptop">
+            </div>
 
-            <label for="requestedAmount">Requested Amount (₹)</label>
-            <input id="requestedAmount" name="requestedAmount"
-                   type="number" min="1" required>
+            <form id="customerLoginForm" class="form-card">
+                <div class="field">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail"
+                           placeholder="Enter registered email" required>
+                </div>
 
-            <label for="annualIncome">Annual Income (₹)</label>
-            <input id="annualIncome" name="annualIncome"
-                   type="number" min="0" required>
+                <div class="field" style="margin-top:18px">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword"
+                           placeholder="Enter password" required>
+                </div>
 
-            <label for="purpose">Purpose of Credit</label>
-            <select id="purpose" name="purpose" required>
-                <option value="">Select purpose</option>
-                <option value="Education">Education</option>
-                <option value="Medical">Medical</option>
-                <option value="Personal">Personal</option>
-                <option value="Business">Business</option>
-                <option value="Home">Home</option>
-                <option value="Vehicle">Vehicle</option>
-                <option value="Other">Other</option>
-            </select>
+                <button class="btn" type="submit">Login</button>
+                <p id="loginMessage" class="message" aria-live="polite"></p>
 
-            <button type="submit">Submit Application</button>
-        </form>
+                <p class="notice">
+                    New customer?
+                    <a href="#register" data-page="register">Register here</a>
+                </p>
+            </form>
+        </div>
     </section>
 
-    <!-- View Records -->
-    <section id="records" class="card">
-        <h2>View Records</h2>
-        <button type="button" id="loadCustomersBtn">Load Customers</button>
-        <button type="button" id="loadApplicationsBtn">Load Applications</button>
+    <!-- 3. ELIGIBILITY -->
+    <section id="eligibility" class="section-white">
+        <div class="section-inner split">
+            <div>
+                <p class="eyebrow">Plan with confidence</p>
+                <h2>Loan Eligibility Calculator</h2>
+                <p class="section-intro">
+                    Enter your age, annual income, requested amount and tenure
+                    to view an illustrative estimate using this project's demo
+                    eligibility rules.
+                </p>
+                <img class="content-image"
+                     src="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&w=900&q=80"
+                     alt="Savings and financial planning">
+            </div>
 
-        <h3>Customer Records</h3>
-        <div id="customerRecordsOutput"></div>
+            <form id="eligibilityForm" class="form-card">
+                <div class="field">
+                    <label for="age">Age</label>
+                    <input type="number" id="age" min="18" max="100"
+                           placeholder="Enter age" required>
+                </div>
 
-        <h3>Credit Application Records</h3>
-        <div id="applicationsOutput"></div>
+                <div class="field" style="margin-top:16px">
+                    <label for="income">Annual Income (₹)</label>
+                    <input type="number" id="income" min="0"
+                           placeholder="e.g. 500000" required>
+                </div>
+
+                <div class="field" style="margin-top:16px">
+                    <label for="loanAmount">Loan Amount (₹)</label>
+                    <input type="number" id="loanAmount" min="1"
+                           placeholder="e.g. 1000000" required>
+                </div>
+
+                <div class="field" style="margin-top:16px">
+                    <label for="loanYears">Loan Tenure (Years)</label>
+                    <input type="number" id="loanYears" min="1" max="40"
+                           value="5" required>
+                </div>
+
+                <button class="btn" type="submit">Check Eligibility</button>
+                <div id="eligibilityResult" class="message" aria-live="polite"></div>
+                <p class="notice">This estimate does not guarantee loan approval.</p>
+            </form>
+        </div>
     </section>
 
-    <!-- Admin Dashboard -->
-    <section id="admin" class="card">
-        <h2>Admin Dashboard</h2>
-        <p>Review pending applications and approve or reject them.</p>
+    <!-- 4. SEARCH AND FILTER -->
+    <section id="search" class="section-blue">
+        <div class="section-inner">
+            <p class="eyebrow">Find your records</p>
+            <h2>Search Applications</h2>
+            <p class="section-intro">
+                Search loaded loan application records and filter them by status.
+            </p>
 
-        <form id="adminLoginForm">
-            <label for="adminUsername">Admin Username</label>
-            <input id="adminUsername" name="username"
-                   value="creditcareadmin" required>
+            <div class="form-card">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="applicationSearch">Search</label>
+                        <input id="applicationSearch" type="search"
+                               placeholder="ID, name, email or purpose">
+                    </div>
 
-            <label for="adminPassword">Admin Password</label>
-            <input id="adminPassword" name="password"
-                   type="password" required>
+                    <div class="field">
+                        <label for="statusFilter">Filter by Status</label>
+                        <select id="statusFilter">
+                            <option value="ALL">All Statuses</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="APPROVED">Approved</option>
+                            <option value="REJECTED">Rejected</option>
+                        </select>
+                    </div>
+                </div>
 
-            <button type="submit">Load Admin Applications</button>
-        </form>
+                <button id="searchButton" class="btn" type="button">
+                    Load Applications
+                </button>
 
-        <p id="adminMessage" aria-live="polite"></p>
-        <div id="adminApplicationsOutput"></div>
+                <div id="searchResults" class="app-list" aria-live="polite"></div>
+            </div>
+        </div>
     </section>
 
-    <!-- EMI Calculator -->
-    <section id="emi" class="card">
-        <h2>EMI Calculator</h2>
+    <!-- 5. REPORTS -->
+    <section id="reports" class="section-white">
+        <div class="section-inner">
+            <p class="eyebrow">Project dashboard</p>
+            <h2>Application Reports</h2>
+            <p class="section-intro">
+                Generate a summary of application records retrieved from the backend.
+            </p>
 
-        <form id="emiForm">
-            <label for="loanAmount">Loan Amount (₹)</label>
-            <input id="loanAmount" type="number" min="1"
-                   value="100000" required>
+            <button id="loadReportsButton" class="btn" type="button">
+                Generate Report
+            </button>
 
-            <label for="interestRate">Annual Interest Rate (%)</label>
-            <input id="interestRate" type="number" min="0"
-                   step="0.1" value="12" required>
+            <div class="report-grid">
+                <div class="report-card">
+                    <h3>Total Applications</h3>
+                    <p id="totalApplications">—</p>
+                </div>
 
-            <label for="loanTenure">Loan Tenure (Years)</label>
-            <input id="loanTenure" type="number" min="1"
-                   max="50" value="2" required>
+                <div class="report-card">
+                    <h3>Pending</h3>
+                    <p id="pendingApplications">—</p>
+                </div>
 
-            <button type="submit">Calculate EMI</button>
-        </form>
+                <div class="report-card">
+                    <h3>Approved</h3>
+                    <p id="approvedApplications">—</p>
+                </div>
 
-        <div id="emiResult" aria-live="polite"></div>
+                <div class="report-card">
+                    <h3>Rejected</h3>
+                    <p id="rejectedApplications">—</p>
+                </div>
+            </div>
+
+            <p id="reportMessage" class="message" aria-live="polite"></p>
+        </div>
     </section>
+
+    <!-- 6. NOTIFICATIONS -->
+    <section id="notifications" class="section-blue">
+        <div class="section-inner split">
+            <div>
+                <p class="eyebrow">Stay up to date</p>
+                <h2>Notifications</h2>
+                <p class="section-intro">
+                    Review notifications stored locally by this demonstration.
+                    Live email and SMS alerts are not configured.
+                </p>
+
+                <img class="content-image"
+                     src="https://images.unsplash.com/photo-1557200134-90327ee9fafa?auto=format&fit=crop&w=900&q=80"
+                     alt="Digital communications">
+
+                <button id="resetNotificationsButton" class="btn" type="button">
+                    Clear Notifications
+                </button>
+            </div>
+
+            <div class="form-card">
+                <h3>Recent Updates</h3>
+                <div id="notificationList" aria-live="polite"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. REGISTRATION -->
+    <section id="register" class="section-white">
+        <div class="section-inner split">
+            <div>
+                <p class="eyebrow">Create an account</p>
+                <h2>Customer Registration</h2>
+                <p class="section-intro">
+                    Enter your details to register as a CreditCare customer.
+                    Keep your customer ID for the loan application form.
+                </p>
+
+                <img class="content-image"
+                     src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=900&q=80"
+                     alt="People collaborating">
+            </div>
+
+            <form id="customerForm" class="form-card">
+                <div class="field">
+                    <label for="fullName">Full Name</label>
+                    <input id="fullName" type="text"
+                           placeholder="Enter full name" required>
+                </div>
+
+                <div class="field" style="margin-top:16px">
+                    <label for="email">Email Address</label>
+                    <input id="email" type="email"
+                           placeholder="Enter email address" required>
+                </div>
+
+                <div class="field" style="margin-top:16px">
+                    <label for="phone">Phone Number</label>
+                    <input id="phone" type="tel"
+                           placeholder="Enter phone number" required>
+                </div>
+
+                <button class="btn" type="submit">Register Customer</button>
+                <p id="message" class="message" aria-live="polite"></p>
+            </form>
+        </div>
+    </section>
+
+    <!-- 8. APPLY FOR A LOAN -->
+    <section id="apply" class="section-blue">
+        <div class="section-inner split">
+            <div>
+                <p class="eyebrow">Take the next step</p>
+                <h2>Apply for a Loan</h2>
+                <p class="section-intro">
+                    Complete the form to submit a loan request. Register first
+                    and enter your actual customer ID.
+                </p>
+
+                <img class="content-image"
+                     src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=900&q=80"
+                     alt="Reviewing financial documents">
+
+                <div class="tip-card">
+                    <strong>Application checklist</strong><br>
+                    ✓ Register your customer details<br>
+                    ✓ Keep your customer ID ready<br>
+                    ✓ Enter accurate financial information<br>
+                    ✓ Select the purpose of your loan
+                </div>
+            </div>
+
+            <form id="applicationForm" class="form-card">
+                <div class="field">
+                    <label for="customerId">Customer ID</label>
+                    <input id="customerId" type="number" min="1"
+                           placeholder="Enter registered customer ID" required>
+                </div>
+
+                <div class="field" style="margin-top:16px">
+                    <label for="requestedAmount">Requested Amount (₹)</label>
+                    <input id="requestedAmount" type="number" min="1" step="0.01"
+                           placeholder="Enter loan amount" required>
+                </div>
+
+                <div class="field" style="margin-top:16px">
+                    <label for="annualIncome">Annual Income (₹)</label>
+                    <input id="annualIncome" type="number" min="0" step="0.01"
+                           placeholder="Enter annual income" required>
+                </div>
+
+                <div class="field" style="margin-top:16px">
+                    <label for="purpose">Loan Purpose</label>
+                    <select id="purpose" required>
+                        <option value="">Select loan purpose</option>
+                        <option value="Education">Education</option>
+                        <option value="Home">Home</option>
+                        <option value="Business">Business</option>
+                        <option value="Medical">Medical</option>
+                        <option value="Vehicle">Vehicle</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <button class="btn" type="submit">Submit Application</button>
+                <p id="applicationMessage" class="message" aria-live="polite"></p>
+            </form>
+        </div>
+    </section>
+
+    <!-- 9. ADMIN -->
+    <section id="admin" class="section-white">
+        <div class="section-inner">
+            <p class="eyebrow">Administration</p>
+            <h2>Admin Management</h2>
+            <p class="section-intro">
+                Load application records and manage application status with
+                administrator access.
+            </p>
+
+            <div class="split">
+                <form id="adminLoginForm" class="form-card">
+                    <h3>Administrator Login</h3>
+
+                    <div class="field">
+                        <label for="adminUsername">Admin Username</label>
+                        <input id="adminUsername" type="text"
+                               autocomplete="username" required>
+                    </div>
+
+                    <div class="field" style="margin-top:16px">
+                        <label for="adminPassword">Admin Password</label>
+                        <input id="adminPassword" type="password"
+                               autocomplete="current-password" required>
+                    </div>
+
+                    <button class="btn" type="submit">Load Applications</button>
+                    <p id="adminMessage" class="message" aria-live="polite"></p>
+                </form>
+
+                <img class="content-image"
+                     src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80"
+                     alt="Professional office">
+            </div>
+
+            <div id="adminApplicationsOutput" class="app-list"
+                 aria-live="polite"></div>
+        </div>
+    </section>
+
 </main>
 
 <footer>
-    <p>CreditCare © 2026 | Smart Credit Management System</p>
+    <strong>CreditCare</strong> — Smart Loan Management System
+    <br>Academic Project | Registration · Applications · Reports · Status Tracking
+    <br><small>Eligibility estimates are illustrative and do not guarantee loan approval.</small>
 </footer>
 
+<!-- Keep the existing backend functionality -->
 <script src="script.js"></script>
 
+<!-- SINGLE-PAGE NAVIGATION -->
 <script>
-    // Show only the section selected in the navigation.
-    function showSection(sectionId) {
-        document.querySelectorAll("main section").forEach(section => {
-            section.hidden = section.id !== sectionId;
+    function showPage(pageId) {
+        const pages = document.querySelectorAll("main > section");
+        const links = document.querySelectorAll("[data-page]");
+
+        const pageExists = Array.from(pages).some(
+            page => page.id === pageId
+        );
+
+        if (!pageExists) pageId = "home";
+
+        pages.forEach(page => {
+            page.classList.toggle("active-page", page.id === pageId);
         });
 
-        document.getElementById("message").textContent = "";
-        window.location.hash = sectionId;
-    }
+        links.forEach(link => {
+            const selected = link.dataset.page === pageId;
+            link.classList.toggle("active", selected);
 
-    // Calculate monthly EMI.
-    document.getElementById("emiForm").addEventListener("submit", function(event) {
-        event.preventDefault();
+            if (selected && link.closest("nav")) {
+                link.setAttribute("aria-current", "page");
+            } else if (link.closest("nav")) {
+                link.removeAttribute("aria-current");
+            }
+        });
 
-        const principal = Number(document.getElementById("loanAmount").value);
-        const annualRate = Number(document.getElementById("interestRate").value);
-        const years = Number(document.getElementById("loanTenure").value);
-        const output = document.getElementById("emiResult");
-
-        if (principal <= 0 || annualRate < 0 || years <= 0 ||
-            !Number.isFinite(principal) ||
-            !Number.isFinite(annualRate) ||
-            !Number.isFinite(years)) {
-            output.textContent = "Please enter valid loan details.";
-            return;
+        if (location.hash !== "#" + pageId) {
+            history.pushState({ page: pageId }, "", "#" + pageId);
         }
 
-        const months = years * 12;
-        const monthlyRate = annualRate / 1200;
-
-        const emi = monthlyRate === 0
-            ? principal / months
-            : principal * monthlyRate *
-              Math.pow(1 + monthlyRate, months) /
-              (Math.pow(1 + monthlyRate, months) - 1);
-
-        output.textContent = "Estimated Monthly EMI: " +
-            emi.toLocaleString("en-IN", {
-                style: "currency",
-                currency: "INR",
-                maximumFractionDigits: 2
-            });
-    });
-
-    // Open the requested section on page load or when a link is shared.
-    function openInitialSection() {
-        const sectionId = window.location.hash.replace("#", "");
-        const validSections = [
-            "customer", "application", "records", "admin", "emi"
-        ];
-
-        showSection(validSections.includes(sectionId) ? sectionId : "customer");
+        window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    // Wait until the page is ready.
-    document.addEventListener("DOMContentLoaded", openInitialSection);
+    // Navigation links and home-page shortcut links
+    document.querySelectorAll("[data-page]").forEach(link => {
+        link.addEventListener("click", function (event) {
+            event.preventDefault();
+            showPage(this.dataset.page);
+        });
+    });
+
+    // Support browser Back and Forward buttons
+    window.addEventListener("popstate", function () {
+        showPage(location.hash.substring(1) || "home");
+    });
+
+    // Open the requested page when the website loads
+    document.addEventListener("DOMContentLoaded", function () {
+        showPage(location.hash.substring(1) || "home");
+    });
 </script>
 
 </body>
