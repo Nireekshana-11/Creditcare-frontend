@@ -1,0 +1,200 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CreditCare - Smart Credit Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>CreditCare</h1>
+    <p>Smart Credit Application and Management System</p>
+</header>
+
+<nav>
+    <button type="button" onclick="showSection('customer')">Register</button>
+    <button type="button" onclick="showSection('application')">Apply for Credit</button>
+    <button type="button" onclick="showSection('records')">View Records</button>
+    <button type="button" onclick="showSection('admin')">Admin Dashboard</button>
+    <button type="button" onclick="showSection('emi')">EMI Calculator</button>
+</nav>
+
+<main>
+    <p id="message" aria-live="polite"></p>
+
+    <!-- Customer Registration -->
+    <section id="customer" class="card">
+        <h2>Customer Registration</h2>
+        <form id="customerForm">
+            <label for="fullName">Full Name</label>
+            <input id="fullName" name="fullName" required>
+
+            <label for="email">Email Address</label>
+            <input id="email" name="email" type="email" required>
+
+            <label for="phone">Phone Number</label>
+            <input id="phone" name="phone" type="tel" required>
+
+            <button type="submit">Register Customer</button>
+        </form>
+    </section>
+
+    <!-- Credit Application -->
+    <section id="application" class="card">
+        <h2>Apply for Credit</h2>
+        <form id="applicationForm">
+            <label for="customerId">Customer ID</label>
+            <input id="customerId" name="customerId" type="number" min="1" required>
+
+            <label for="requestedAmount">Requested Amount (₹)</label>
+            <input id="requestedAmount" name="requestedAmount"
+                   type="number" min="1" required>
+
+            <label for="annualIncome">Annual Income (₹)</label>
+            <input id="annualIncome" name="annualIncome"
+                   type="number" min="0" required>
+
+            <label for="purpose">Purpose of Credit</label>
+            <select id="purpose" name="purpose" required>
+                <option value="">Select purpose</option>
+                <option value="Education">Education</option>
+                <option value="Medical">Medical</option>
+                <option value="Personal">Personal</option>
+                <option value="Business">Business</option>
+                <option value="Home">Home</option>
+                <option value="Vehicle">Vehicle</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <button type="submit">Submit Application</button>
+        </form>
+    </section>
+
+    <!-- View Records -->
+    <section id="records" class="card">
+        <h2>View Records</h2>
+        <button type="button" id="loadCustomersBtn">Load Customers</button>
+        <button type="button" id="loadApplicationsBtn">Load Applications</button>
+
+        <h3>Customer Records</h3>
+        <div id="customerRecordsOutput"></div>
+
+        <h3>Credit Application Records</h3>
+        <div id="applicationsOutput"></div>
+    </section>
+
+    <!-- Admin Dashboard -->
+    <section id="admin" class="card">
+        <h2>Admin Dashboard</h2>
+        <p>Review pending applications and approve or reject them.</p>
+
+        <form id="adminLoginForm">
+            <label for="adminUsername">Admin Username</label>
+            <input id="adminUsername" name="username"
+                   value="creditcareadmin" required>
+
+            <label for="adminPassword">Admin Password</label>
+            <input id="adminPassword" name="password"
+                   type="password" required>
+
+            <button type="submit">Load Admin Applications</button>
+        </form>
+
+        <p id="adminMessage" aria-live="polite"></p>
+        <div id="adminApplicationsOutput"></div>
+    </section>
+
+    <!-- EMI Calculator -->
+    <section id="emi" class="card">
+        <h2>EMI Calculator</h2>
+
+        <form id="emiForm">
+            <label for="loanAmount">Loan Amount (₹)</label>
+            <input id="loanAmount" type="number" min="1"
+                   value="100000" required>
+
+            <label for="interestRate">Annual Interest Rate (%)</label>
+            <input id="interestRate" type="number" min="0"
+                   step="0.1" value="12" required>
+
+            <label for="loanTenure">Loan Tenure (Years)</label>
+            <input id="loanTenure" type="number" min="1"
+                   max="50" value="2" required>
+
+            <button type="submit">Calculate EMI</button>
+        </form>
+
+        <div id="emiResult" aria-live="polite"></div>
+    </section>
+</main>
+
+<footer>
+    <p>CreditCare © 2026 | Smart Credit Management System</p>
+</footer>
+
+<script src="script.js"></script>
+
+<script>
+    // Show only the section selected in the navigation.
+    function showSection(sectionId) {
+        document.querySelectorAll("main section").forEach(section => {
+            section.hidden = section.id !== sectionId;
+        });
+
+        document.getElementById("message").textContent = "";
+        window.location.hash = sectionId;
+    }
+
+    // Calculate monthly EMI.
+    document.getElementById("emiForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const principal = Number(document.getElementById("loanAmount").value);
+        const annualRate = Number(document.getElementById("interestRate").value);
+        const years = Number(document.getElementById("loanTenure").value);
+        const output = document.getElementById("emiResult");
+
+        if (principal <= 0 || annualRate < 0 || years <= 0 ||
+            !Number.isFinite(principal) ||
+            !Number.isFinite(annualRate) ||
+            !Number.isFinite(years)) {
+            output.textContent = "Please enter valid loan details.";
+            return;
+        }
+
+        const months = years * 12;
+        const monthlyRate = annualRate / 1200;
+
+        const emi = monthlyRate === 0
+            ? principal / months
+            : principal * monthlyRate *
+              Math.pow(1 + monthlyRate, months) /
+              (Math.pow(1 + monthlyRate, months) - 1);
+
+        output.textContent = "Estimated Monthly EMI: " +
+            emi.toLocaleString("en-IN", {
+                style: "currency",
+                currency: "INR",
+                maximumFractionDigits: 2
+            });
+    });
+
+    // Open the requested section on page load or when a link is shared.
+    function openInitialSection() {
+        const sectionId = window.location.hash.replace("#", "");
+        const validSections = [
+            "customer", "application", "records", "admin", "emi"
+        ];
+
+        showSection(validSections.includes(sectionId) ? sectionId : "customer");
+    }
+
+    // Wait until the page is ready.
+    document.addEventListener("DOMContentLoaded", openInitialSection);
+</script>
+
+</body>
+</html>

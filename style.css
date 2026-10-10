@@ -1,0 +1,241 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f2f5fa;
+    color: #263238;
+    line-height: 1.6;
+}
+
+.hero {
+    background: #173b67;
+    color: white;
+    text-align: center;
+    padding: 30px 15px;
+}
+
+.hero h1 {
+    font-size: 36px;
+    margin-bottom: 5px;
+}
+
+.navigation {
+    background: #102d4d;
+    padding: 14px;
+    text-align: center;
+}
+
+.navigation a {
+    color: white;
+    text-decoration: none;
+    margin: 0 14px;
+    font-weight: bold;
+}
+
+.navigation a:hover {
+    color: #80d8ff;
+}
+
+.container {
+    width: 90%;
+    max-width: 1100px;
+    margin: 25px auto;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    overflow-x: auto;
+}
+
+.card h2 {
+    color: #173b67;
+    margin-bottom: 15px;
+}
+
+.card h3 {
+    margin: 20px 0 10px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+label {
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+    font-size: 15px;
+}
+
+input:focus,
+select:focus {
+    outline: 2px solid #80b7ed;
+    border-color: #2463a6;
+}
+
+button {
+    background: #2463a6;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 11px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+.button-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.approve-btn {
+    background: #198754;
+    margin: 3px;
+}
+
+.reject-btn {
+    background: #dc3545;
+    margin: 3px;
+}
+
+#message {
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+#adminApplicationsOutput,
+#customersOutput,
+#applicationsOutput {
+    margin-top: 15px;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    min-width: 650px;
+}
+
+th,
+td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #d9e1ea;
+}
+
+th {
+    background: #173b67;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background: #f2f5fa;
+}
+
+footer {
+    background: #102d4d;
+    color: white;
+    text-align: center;
+    padding: 18px;
+}
+
+@media (max-width: 600px) {
+    .navigation a {
+        display: inline-block;
+        margin: 5px;
+    }
+
+    .container {
+        width: 95%;
+    }
+
+    .card {
+        padding: 15px;
+    }
+
+    .hero h1 {
+        font-size: 28px;
+    }
+    
+.admin-actions {
+    min-width: 190px;
+}
+
+.approve-btn {
+    background-color: #198754;
+    color: white;
+    margin: 4px;
+}
+
+.reject-btn {
+    background-color: #dc3545;
+    color: white;
+    margin: 4px;
+}
+
+.status {
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.status.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status.approved {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.status.rejected {
+    background: #f8d7da;
+    color: #842029;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#adminMessage {
+    margin: 12px 0;
+    font-weight: bold;
+}
+
+#adminApplicationsOutput {
+    overflow-x: auto;
+    margin-top: 16px;
+}
+}
